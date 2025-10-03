@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Trung Thu Đặc Biệt</title>
+    <style>
+      :root {
+        --accent1: #ffcc33;
+        --accent2: #ff6b81;
+        --glass: rgba(255, 255, 255, 0.06);
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      }
+      body {
+        background: url("background.png") center center / cover no-repeat fixed;
+        position: relative;
+        color: #fff;
+        overflow: hidden;
+      }
+
+      /* translucent overlay to make content readable */
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 20, 0.18),
+          rgba(0, 0, 0, 0.5)
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* subtle vignette */
+      .vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          60% 50% at 50% 30%,
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 0.5)
+        );
+        mix-blend-mode: multiply;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      /* container for UI */
+      .ui {
+        position: relative;
+        z-index: 10;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 28px 20px;
+        box-sizing: border-box;
+      }
+
+      /* top area for small title */
+      .title {
+        margin-top: 8px;
+        text-align: center;
+        color: #fff;
+        text-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+      }
+      .title h1 {
+        margin: 0;
+        font-size: clamp(20px, 2.6vw, 36px);
+        letter-spacing: 1px;
+      }
+      .subtitle {
+        font-size: clamp(12px, 1.6vw, 16px);
+        opacity: 0.9;
+      }
+
+      /* message card */
+      .card {
+        width: min(900px, 96%);
+        max-width: 1100px;
+        margin: auto;
+        padding: 28px;
+        border-radius: 18px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.03),
+          rgba(0, 0, 0, 0.18)
+        );
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        backdrop-filter: blur(6px) saturate(1.1);
+      }
+
+      /* left column (text) */
+      .card-left {
+        flex: 1;
+        min-width: 260px;
+      }
+      .greeting {
+        font-size: clamp(20px, 3.2vw, 36px);
+        margin: 0 0 10px 0;
+        color: var(--accent1);
+        text-shadow: 0 0 10px rgba(255, 200, 80, 0.8);
+      }
+      .subtext {
+        font-size: clamp(14px, 1.6vw, 18px);
+        color: #fff;
+        opacity: 0.95;
+        line-height: 1.45;
+      }
+
+      /* right column (buttons) */
+      .card-right {
+        width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+      }
+      .btn {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.18s ease, box-shadow 0.18s;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      }
+      .btn:active {
+        transform: translateY(1px) scale(0.995);
+      }
+      .btn--fire {
+        background: linear-gradient(90deg, #ff7b7b, #ffbf6b);
+      }
+      .btn--music {
+        background: linear-gradient(90deg, #7be7ff, #7b8bff);
+      }
+      .btn--wish {
+        background: linear-gradient(90deg, #ff9bd6, #ff7171);
+      }
+
+      .small-note {
+        font-size: 12px;
+        opacity: 0.9;
+        margin-top: 6px;
+      }
+
+      /* message overlay (center big) */
+      .floating-message {
+        position: absolute;
+        z-index: 9;
+        left: 50%;
+        top: 48%;
+        transform: translate(-50%, -50%) scale(0.96);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.6s ease, transform 0.6s ease;
+        text-align: center;
+      }
+      .floating-message.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      .floating-message .text {
+        font-size: clamp(22px, 3.5vw, 40px);
+        color: var(--accent1);
+        text-shadow: 0 8px 40px rgba(255, 200, 80, 0.75);
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.03),
+          rgba(255, 255, 255, 0.02)
+        );
+        padding: 12px 18px;
+        border-radius: 14px;
+        display: inline-block;
+        transform-origin: center;
+        animation: floatUp 2.6s ease forwards;
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translateY(40px) scale(0.98);
+          opacity: 0;
+        }
+        50% {
+          transform: translateY(-6px) scale(1.02);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(0px) scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* lanterns (pure CSS shapes) */
+      .lanterns {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .lantern {
+        position: absolute;
+        width: 90px;
+        height: 120px;
+        left: 10%;
+        top: 60%;
+        transform-origin: center;
+        animation: lanternFloat linear infinite;
+      }
+      .lantern .body {
+        width: 70%;
+        height: 70%;
+        margin: 0 auto;
+        border-radius: 40% 40% 50% 50%;
+        background: radial-gradient(
+          circle at 30% 20%,
+          #fff6c8,
+          #ffda66 10%,
+          #ff6b6b 70%
+        );
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4),
+          inset 0 -8px 20px rgba(0, 0, 0, 0.08);
+      }
+      .lantern .stick {
+        position: absolute;
+        top: -18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 18px;
+        background: #d8caa3;
+        border-radius: 2px;
+      }
+      .lantern .tassel {
+        position: absolute;
+        bottom: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 6px;
+        height: 18px;
+        background: gold;
+        border-radius: 3px;
+      }
+
+      @keyframes lanternFloat {
+        0% {
+          transform: translateY(40vh) rotate(-8deg) scale(0.9);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        50% {
+          transform: translateY(10vh) rotate(6deg) scale(1);
+        }
+        100% {
+          transform: translateY(-20vh) rotate(-6deg) scale(0.95);
+          opacity: 0.9;
+        }
+      }
+
+      /* canvas fireworks sits above background but below UI card */
+      #fireCanvas {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        pointer-events: none;
+      }
+
+      /* responsiveness */
+      @media (max-width: 720px) {
+        .card {
+          flex-direction: column;
+          padding: 18px;
+          gap: 12px;
+        }
+        .card-right {
+          width: 100%;
+        }
+        .lantern {
+          width: 60px;
+          height: 80px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="overlay"></div>
+    <div class="vignette"></div>
+
+    <!-- lanterns layer -->
+    <div class="lanterns" aria-hidden="true">
+      <div
+        class="lantern"
+        style="left: 10%; animation-duration: 20s; animation-delay: -2s"
+      >
+        <div class="stick"></div>
+        <div class="body"></div>
+        <div class="tassel"></div>
+      </div>
+      <div
+        class="lantern"
+        style="left: 30%; animation-duration: 24s; animation-delay: -6s"
+      >
+        <div class="stick"></div>
+        <div
+          class="body"
+          style="
+            background: radial-gradient(
+              circle at 30% 20%,
+              #fff6c8,
+              #ffd86b 10%,
+              #ff9a3c 70%
+            );
+          "
+        ></div>
+        <div class="tassel"></div>
+      </div>
+      <div
+        class="lantern"
+        style="left: 70%; animation-duration: 22s; animation-delay: -4s"
+      >
+        <div class="stick"></div>
+        <div
+          class="body"
+          style="
+            background: radial-gradient(
+              circle at 30% 20%,
+              #fff6c8,
+              #ffd86b 10%,
+              #c36bff 70%
+            );
+          "
+        ></div>
+        <div class="tassel"></div>
+      </div>
+      <div
+        class="lantern"
+        style="left: 85%; animation-duration: 26s; animation-delay: -8s"
+      >
+        <div class="stick"></div>
+        <div
+          class="body"
+          style="
+            background: radial-gradient(
+              circle at 30% 20%,
+              #fff6c8,
+              #ffd86b 10%,
+              #7bc8ff 70%
+            );
+          "
+        ></div>
+        <div class="tassel"></div>
+      </div>
+    </div>
+
+    <!-- canvas for fireworks & stars -->
+    <canvas id="fireCanvas" aria-hidden="true"></canvas>
+
+    <div class="ui" role="main">
+      <div class="title" aria-hidden="true">
+        <h1>Chúc Bé có một đêm trung thu thật tuyệt vời</h1>
+        <div class="subtitle">Click nút để tạo bất ngờ nhé 💖</div>
+      </div>
+
+      <div class="card" role="region" aria-label="Thiệp Trung Thu">
+        <div class="card-left">
+          <div class="greeting">
+            🌕 Chúc em một đêm Trung Thu đầy ánh trăng và nụ cười 🌕
+          </div>
+          <div class="subtext">Mong em luôn ấm áp, vui tươi.</div>
+        </div>
+        <div class="card-right" aria-hidden="false">
+          <button class="btn btn--wish" id="btn-wish" onclick="revealWish()">
+            💌 Hiện lời chúc
+          </button>
+
+          <button class="btn btn--fire" id="btn-fire" onclick="bigBurst()">
+            🎆 Bắn pháo hoa (một tràng)
+          </button>
+
+          <button class="btn btn--music" id="btn-music" onclick="toggleMusic()">
+            🎶 Bật nhạc
+          </button>
+
+          <div class="small-note"></div>
+        </div>
+      </div>
+
+      <div style="height: 40px"></div>
+    </div>
+
+    <!-- big center message -->
+    <div class="floating-message" id="floatingMsg" aria-live="polite">
+      <div class="text" id="floatingText">
+        🌸 Chúc em Trung Thu thật ngọt ngào! 🌸
+      </div>
+    </div>
+
+    <!-- audio (replace src with your favorite track if you want) -->
+    <audio
+      id="bgAudio"
+      src="https://www.bensound.com/bensound-music/bensound-dreams.mp3"
+      preload="auto"
+    ></audio>
+
+    <script>
+      /* ========== Canvas setup ========== */
+      const canvas = document.getElementById("fireCanvas");
+      const ctx = canvas.getContext("2d", { alpha: true });
+      let W = (canvas.width = innerWidth);
+      let H = (canvas.height = innerHeight);
+      addEventListener("resize", () => {
+        W = canvas.width = innerWidth;
+        H = canvas.height = innerHeight;
+      });
+
+      /* ========== Stars ========= */
+      const stars = [];
+      for (let i = 0; i < 120; i++) {
+        stars.push({
+          x: Math.random() * W,
+          y: Math.random() * H * 0.6,
+          r: Math.random() * 1.4 + 0.4,
+          alpha: Math.random() * 0.8 + 0.2,
+          tw: Math.random() * 2 + 1.2,
+        });
+      }
+
+      /* ========== Fireworks system ========== */
+      class Particle {
+        constructor(x, y, color, vel) {
+          this.x = x;
+          this.y = y;
+          this.vx = vel.x;
+          this.vy = vel.y;
+          this.color = color;
+          this.life = Math.random() * 50 + 60;
+          this.decay = 0.96 + Math.random() * 0.02;
+          this.size = Math.random() * 2.2 + 1;
+          this.alpha = 1;
+        }
+        update() {
+          this.vy += 0.02; // gravity
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vx *= 0.999;
+          this.vy *= 0.999;
+          this.life--;
+          this.alpha = Math.max(0, this.life / 120);
+        }
+        draw() {
+          ctx.globalAlpha = this.alpha;
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      let particles = [];
+
+      /* spawn a big explosion at (x,y) */
+      function spawnExplosion(x, y, hue, count) {
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 6 + 1.8;
+          const vel = {
+            x: Math.cos(angle) * speed,
+            y: Math.sin(angle) * speed,
+          };
+          const color = `hsl(${
+            (hue + Math.random() * 40 - 20 + 360) % 360
+          }, 100%, ${Math.random() * 30 + 45}%)`;
+          particles.push(new Particle(x, y, color, vel));
+        }
+      }
+
+      /* launch rocket: animate an upward dot then explode */
+      function launchRocket(targetX) {
+        const startX = Math.random() * W * 0.8 + W * 0.1;
+        const startY = H + 20;
+        const rocketHue = Math.floor(Math.random() * 360);
+        let y = startY;
+        let x = startX;
+        let t = 0;
+        const speed = 6 + Math.random() * 3;
+        const targetY = Math.random() * (H * 0.5) + H * 0.15;
+
+        const rocketInterval = setInterval(() => {
+          // draw rocket trail by temporary particle
+          particles.push(
+            new Particle(x, y, `hsl(${rocketHue}, 90%, 60%)`, {
+              x: (targetX - startX) * 0.005,
+              y: -speed,
+            })
+          );
+          y -= speed;
+          x += (targetX - startX) * 0.01;
+          t++;
+          if (y <= targetY || t > 200) {
+            clearInterval(rocketInterval);
+            // main explosion
+            spawnExplosion(
+              x,
+              y,
+              rocketHue,
+              120 + Math.floor(Math.random() * 80)
+            );
+            // secondary small bursts
+            for (let s = 0; s < 3; s++) {
+              setTimeout(
+                () =>
+                  spawnExplosion(
+                    x + (Math.random() * 200 - 100),
+                    y + (Math.random() * 80 - 40),
+                    (rocketHue + Math.random() * 60 - 30 + 360) % 360,
+                    40 + Math.floor(Math.random() * 50)
+                  ),
+                s * 120
+              );
+            }
+          }
+        }, 20);
+      }
+
+      /* bigBurst: multiple rockets across screen spaced briefly */
+      let isBursting = false;
+      function bigBurst() {
+        if (isBursting) return;
+        isBursting = true;
+        // show center message
+        revealCenterText("🎆 Một tràng pháo hoa dành cho em 🎆");
+        // launch many rockets across the sky
+        const totalRockets = 18;
+        for (let i = 0; i < totalRockets; i++) {
+          setTimeout(() => {
+            const tx = Math.random() * W * 0.9 + W * 0.05;
+            launchRocket(tx);
+          }, i * 180);
+        }
+        // allow another burst after some time
+        setTimeout(() => (isBursting = false), totalRockets * 180 + 2200);
+      }
+
+      /* reveal center floating message */
+      function revealCenterText(txt) {
+        const box = document.getElementById("floatingMsg");
+        const txtElem = document.getElementById("floatingText");
+        txtElem.textContent = txt;
+        box.classList.add("show");
+        // hide after 5s
+        setTimeout(() => box.classList.remove("show"), 5000);
+      }
+
+      /* reveal wish (message card) */
+      function revealWish() {
+        revealCenterText("💌 Chúc em Trung Thu thật ấm áp và rực rỡ 💌");
+      }
+
+      /* animation loop */
+      function step() {
+        ctx.clearRect(0, 0, W, H);
+
+        // draw faint stars
+        for (let s of stars) {
+          s.alpha += Math.random() * 0.02 - 0.01; // slight twinkle randomness
+          if (s.alpha < 0.2) s.alpha = 0.2;
+          if (s.alpha > 1) s.alpha = 1;
+          ctx.globalAlpha = s.alpha * 0.9;
+          ctx.fillStyle = "#fff";
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+
+        // update & draw particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.update();
+          p.draw();
+          // slight glow
+          if (Math.random() < 0.06) {
+            ctx.globalAlpha = p.alpha * 0.15;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * 3.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+          }
+          if (p.life <= 0 || p.alpha <= 0.02 || p.y > H + 200) {
+            particles.splice(i, 1);
+          }
+        }
+
+        requestAnimationFrame(step);
+      }
+      step();
+
+      /* ========== Music control ========== */
+      const audio = document.getElementById("bgAudio");
+      let musicOn = false;
+      function toggleMusic() {
+        if (!musicOn) {
+          audio.currentTime = 0;
+          audio.volume = 0.75;
+          audio.play().catch(() => {
+            /* auto-play may be blocked on some browsers until user interacts - but button click is interaction */
+          });
+          document.getElementById("btn-music").textContent = "🔈 Tắt nhạc";
+          musicOn = true;
+        } else {
+          audio.pause();
+          document.getElementById("btn-music").textContent = "🎶 Bật nhạc";
+          musicOn = false;
+        }
+      }
+
+      /* optional: keyboard shortcut: F fireworks, M music, W wish */
+      addEventListener("keydown", (e) => {
+        if (e.key.toLowerCase() === "f") bigBurst();
+        if (e.key.toLowerCase() === "m") toggleMusic();
+        if (e.key.toLowerCase() === "w") revealWish();
+      });
+
+      /* Accessibility: announce action */
+      function announce(text) {
+        const live = document.getElementById("a11yLive");
+        if (!live) {
+          const div = document.createElement("div");
+          div.id = "a11yLive";
+          div.setAttribute("aria-live", "polite");
+          div.style.position = "absolute";
+          div.style.left = "-99999px";
+          document.body.appendChild(div);
+          div.textContent = text;
+        } else live.textContent = text;
+      }
+
+      /* optional: small click ripple for UX (on buttons) */
+      document.querySelectorAll(".btn").forEach((b) => {
+        b.addEventListener("click", () => announce(b.textContent.trim()));
+      });
+    </script>
+  </body>
+</html>
